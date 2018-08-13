@@ -2,7 +2,6 @@ package main
 
 import (
 	"time"
-	"github.com/prometheus/common/log"
 	"encoding/binary"
 	"os"
 	"runtime"
@@ -14,13 +13,19 @@ var (
 )
 
 func main() {
+	bytesWritten := 0
+	fd, err := os.Create("./pool.txt")
+	if err != nil {
+		panic(err)
+	}
+
 	var next uint8
-	for true {
+	for bytesWritten < 1024 {
 		next, trng = trng.Next()
-		log.Debugf("Generated %d", next)
-		if err := binary.Write(os.Stderr, binary.BigEndian, next); err != nil {
+		if err := binary.Write(fd, binary.BigEndian, next); err != nil {
 			panic(err)
 		}
+		bytesWritten += 1
 	}
 }
 
@@ -50,4 +55,3 @@ func MakeEntropy() uint8 {
 
 	return result
 }
-
