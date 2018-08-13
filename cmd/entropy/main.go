@@ -5,24 +5,31 @@ import (
 	"encoding/binary"
 	"os"
 	"runtime"
+	"golang.org/x/tools/container/intsets"
 )
 
 var (
-	seed = MakeEntropy()
-	trng = NewTRNG(seed)
+	seed   = MakeEntropy()
+	trng   = NewTRNG(seed)
+	nBytes = intsets.MaxInt
 )
 
 func main() {
 	bytesWritten := 0
-	fd, err := os.Create("./pool.txt")
-	if err != nil {
-		panic(err)
+	var out = os.Stdout
+	if len(os.Args) > 1 && os.Args[1] == "-test" {
+		fd, err := os.Create("pool.bin")
+		if err != nil {
+			panic(err)
+		}
+		out = fd
+		nBytes = 1024
 	}
 
 	var next uint8
-	for bytesWritten < 1024 {
+	for bytesWritten < nBytes {
 		next, trng = trng.Next()
-		if err := binary.Write(fd, binary.BigEndian, next); err != nil {
+		if err := binary.Write(out, binary.BigEndian, next); err != nil {
 			panic(err)
 		}
 		bytesWritten += 1
