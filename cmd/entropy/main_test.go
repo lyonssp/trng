@@ -2,7 +2,6 @@ package main
 
 import (
 	"testing"
-	"github.com/gonum/stat"
 	"math/rand"
 	"time"
 )
@@ -30,7 +29,7 @@ func TestTRNG_ChiSquared(t *testing.T) {
 
 	t.Logf("Frequencies: %v", observed)
 
-	chisquared := stat.ChiSquare(observed, expected)
+	chisquared := ChiSquared(observed, expected)
 
 	if chisquared > heuristic {
 		t.Fatalf("Failed Hypothesis; Chi-Squared %f not less than %f", chisquared, heuristic)
@@ -39,12 +38,12 @@ func TestTRNG_ChiSquared(t *testing.T) {
 	}
 }
 
-// Test Go's RNG for sanity checking test method
+// Test Go's RNG to sanity check test method
 func TestTRNG_GoRand(t *testing.T) {
 	// Heuristic limit on chisquared value
 	// Corresponds to ~95% confidence
 	heuristic := 3.841
-	sampleSize := 100000 // number of bytes to sample
+	sampleSize := 10000 // number of bytes to sample
 
 	expectedFrequencyPerByte := 4.0
 	expected := []float64{float64(sampleSize) * expectedFrequencyPerByte, float64(sampleSize) * expectedFrequencyPerByte}
@@ -60,7 +59,7 @@ func TestTRNG_GoRand(t *testing.T) {
 
 	t.Logf("Frequencies: %v", observed)
 
-	chisquared := stat.ChiSquare(observed, expected)
+	chisquared := ChiSquared(observed, expected)
 
 	if chisquared > heuristic {
 		t.Fatalf("Failed Hypothesis; Chi-Squared %f not less than %f", chisquared, heuristic)
@@ -132,4 +131,37 @@ func TestCountZeros(t *testing.T) {
 			t.Fail()
 		}
 	})
+}
+
+/* Test Helpers */
+
+// Calculate Chi Squared test statistic
+func ChiSquared(exp []float64, sample []float64) float64 {
+	var result = 0.0
+
+	sampleSize := len(sample)
+	for i := 0; i < sampleSize; i++ {
+		if sample[i] == 0 && exp[i] == 0 {
+			continue
+		}
+		result += (exp[i] - sample[i]) * (exp[i] - sample[i]) / exp[i]
+	}
+	return result
+}
+
+// return number of zeros and ones in the bit representation of a uint8
+func CountBits(bits uint8) (int, int) {
+	ones := 0
+	zeroes := 0
+	for i := uint(0); i < 8; i++ {
+		next := (bits >> i) & 1
+		if next == 0 {
+			zeroes += 1
+		}
+		if next == 1 {
+			ones += 1
+		}
+	}
+
+	return zeroes, ones
 }

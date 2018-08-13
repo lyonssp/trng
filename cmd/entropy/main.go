@@ -9,7 +9,7 @@ import (
 )
 
 var (
-	seed = GenSeed()
+	seed = MakeEntropy()
 	trng = NewTRNG(seed)
 )
 
@@ -30,20 +30,19 @@ type TRNG struct {
 
 func (g *TRNG) Next() (uint8, TRNG) {
 	next := g.seed
-	return next, NewTRNG(GenSeed())
+	return next, NewTRNG(MakeEntropy())
 }
 
 func NewTRNG(s uint8) TRNG {
 	return TRNG{seed: s}
 }
 
-func GenSeed() uint8 {
+func MakeEntropy() uint8 {
 	ms := runtime.MemStats{}
 	runtime.ReadMemStats(&ms)
 
 	var result uint8 = 0x00
 	for i := uint(0); i < 4; i++ {
-		time.Sleep(20 * time.Nanosecond)
 		t := time.Now().UnixNano()
 		timeBits := uint8(t & 0x3)
 		result = result ^ (timeBits << (i << 1))
@@ -52,18 +51,3 @@ func GenSeed() uint8 {
 	return result
 }
 
-func CountBits(bits uint8) (int, int) {
-	ones := 0
-	zeroes := 0
-	for i := uint(0); i < 8; i++ {
-		next := (bits >> i) & 1
-		if next == 0 {
-			zeroes += 1
-		}
-		if next == 1 {
-			ones += 1
-		}
-	}
-
-	return zeroes, ones
-}
