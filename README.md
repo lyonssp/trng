@@ -17,3 +17,16 @@ uniformly distributed, but wouldn't pass as a random pool of data.  Compression
 tools attempt to find patterns in data in order to encode similar blobs of data with
 less bytes, so this heuristic measure helps us to gain some confidence in the fact
 that our stream of bits is not predictable.
+
+## Usage
+
+```
+$ go run entropy/main.go
+```
+
+To force the binary to produce a random file for compression testing rather than stream to stdout, pass
+the `-test` flag:
+```
+$ go run entropy/main.go -test
+```
+
